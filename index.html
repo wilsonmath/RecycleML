@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <title>Recycle ML Model</title>
+  <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
   <h2>RecycleML</h2>
-<button onclick="document.getElementById('imageUpload').click()">Upload Image</button>
-<input type="file" id="imageUpload" accept="image/*" style="display:none">
-<div id="picture-container"></div>
-<div id="label-container"></div>
+  <div class="tagline">Recycle With Ease</div> 
+  <div class="button-group">
+      <button onclick="document.getElementById('imageUpload').click()">Upload Image</button>
+  </div>
+  <input type="file" id="imageUpload" accept="image/*" style="display:none">
+  <div id="picture-container"></div>
+  <div id="label-container"></div>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
   <script src="app.js"></script>
