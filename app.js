@@ -2,6 +2,28 @@ const modelURL = "https://wilsonmath.github.io/RecycleML/models/model.json";
 const metadataURL = "https://wilsonmath.github.io/RecycleML/models/metadata.json";
 
 let model, labelContainer, maxPredictions;
+let currentKey = null;
+let recycledCurrentImage = false;
+
+const nameToKey = {
+  "plastic bottle": "plastic", 
+  "plastic bott...": "plastic",
+  "aluminum can": "metal",
+  "paper":"paper",
+};
+
+let recycleData = JSON.parse(localStorage.getItem("recycleData")) || {
+  plastic: 0,
+  paper: 0,
+  metal: 0
+};
+
+function updateDashboard() {
+  document.getElementById("plasticnum").textContent = recycleData.plastic || 0;
+  document.getElementById("papernum").textContent = recycleData.paper || 0;
+  document.getElementById("metalnum").textContent = recycleData.metal || 0;
+}
+
 async function init() {
   model = await tmImage.load(modelURL, metadataURL);
   maxPredictions = model.getTotalClasses();
@@ -16,27 +38,49 @@ async function init() {
 }
 
 async function predict(input) {
-  var prediction = await model.predict(input);
-  var bestPrediction = null;
-  var maxProbability = 0;
-  for (let i = 0; i < maxPredictions; i++) {
+  recycledCurrentImage = false;
+  const msg = document.getElementById("recycle-msg");
+  msg.textContent = "";
+  const prediction = await model.predict(input);
+  let bestPrediction = null;
+  let maxProbability = 0;
+
+  for (let i = 0; i < prediction.length; i++) {
     if (prediction[i].probability > maxProbability) {
       maxProbability = prediction[i].probability;
       bestPrediction = prediction[i];
     }
   }
+  const predictionText = document.getElementById("prediction-text");
+  const recycleBtn = document.getElementById("recycleBtn");
+  if (bestPrediction && maxProbability > 0.5) {
+    const key =
+      nameToKey[bestPrediction.className.toLowerCase()] ||
+      bestPrediction.className.toLowerCase();
 
-  if (labelContainer.innerHTML == "Result") {
-    labelContainer.innerHTML = "Verifying Result"
-  }
-  if (bestPrediction) {
-    var resultText = bestPrediction.className;
-    if (maxProbability > 0.5) {
-      labelContainer.innerHTML = resultText
-    } else { 
-      labelContainer.innerHTML = "Uncertain, Please try Again"
-    }
+    currentKey = key;
+    predictionText.textContent = bestPrediction.className;
+    recycleBtn.disabled = false;
+  } else {
+    currentKey = null;
+    predictionText.textContent = "Uncertain, try again";
+    recycleBtn.disabled = true;
   }}
+
+document.getElementById("recycleBtn").onclick = function() {
+  if (!currentKey || recycledCurrentImage) return;
+  if (recycleData[currentKey] === undefined) {
+    recycleData[currentKey] = 0;
+  }
+  recycleData[currentKey]++;
+  localStorage.setItem("recycleData", JSON.stringify(recycleData));
+  updateDashboard();
+  recycledCurrentImage = true;
+  this.disabled = true;
+  const msg = document.getElementById("recycle-msg");
+  msg.textContent = `Added ${currentKey} to dashboard!`;
+  setTimeout(() => (msg.textContent = ""), 3000);
+};
 async function handleImageUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -48,8 +92,7 @@ async function handleImageUpload(event) {
   img.width = 300;
   img.height = 300;
   container.appendChild(img);
-  labelContainer.innerHTML = "Verifying Result"
-  await predict(img);
+  predict(img);
   };
 
 
