@@ -6,10 +6,12 @@ let currentKey = null;
 let recycledCurrentImage = false;
 
 const nameToKey = {
-  "plastic bottle": "plastic", 
+  "plastic bottles": "plastic",
+  "plastic bottle": "plastic",
   "plastic bott...": "plastic",
+  "aluminum cans": "metal",
   "aluminum can": "metal",
-  "paper":"paper",
+  "paper": "paper",
 };
 
 let recycleData = JSON.parse(localStorage.getItem("recycleData")) || {
